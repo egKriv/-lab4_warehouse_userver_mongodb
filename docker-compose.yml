@@ -1,0 +1,91 @@
+services:
+  api:
+    container_name: inventory-api
+    build: .
+    environment:
+      - CCACHE_DIR=/home/user/inventory-api/.ccache
+      - CORES_DIR=/cores
+      - PREFIX=${PREFIX:-~/.local}
+      - SHELL=/bin/bash
+      - POSTGRES_CONNECTION_STRING=${POSTGRES_CONNECTION_STRING}
+      - POSTGRES_HOST=${POSTGRES_HOST}
+      - POSTGRES_PORT=${POSTGRES_PORT}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - MONGO_CONNECTION_STRING=mongodb://mongo:27017/wms
+    ports:
+      - '${SERVER_PORT:-8082}:8080'
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - seccomp=unconfined
+    volumes:
+      - ccache-volume:/home/user/inventory-api/.ccache
+      - cores-volume:/cores
+    working_dir: /home/user/inventory-api
+    user: user
+    command: /home/user/inventory-api/build-release/inventory-api --config /home/user/inventory-api/configs/static_config.yaml --config_vars /home/user/inventory-api/configs/config_vars.yaml
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8080/ping']
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    logging:
+      driver: 'local'
+      options:
+        max-size: '10m'
+        max-file: '3'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mongo:
+        condition: service_started
+    networks:
+      - api_network
+
+  postgres:
+    image: postgres:latest
+    container_name: inventory-db
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - '${POSTGRES_PORT:-5432}:5432'
+    volumes:
+      - postgres-data:/var/lib/postgresql
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+      - ./postgres/data.sql:/docker-entrypoint-initdb.d/02-data.sql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - api_network
+
+  mongo:
+    image: mongo:7
+    container_name: inventory-mongo
+    restart: always
+    environment:
+      MONGO_INITDB_DATABASE: wms
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - api_network
+
+volumes:
+  postgres-data:
+  ccache-volume:
+  cores-volume:
+  mongo-data:
+
+networks:
+  api_network:
+    driver: bridge

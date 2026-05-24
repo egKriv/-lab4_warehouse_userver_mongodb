@@ -1,0 +1,57 @@
+Receipt:
+  type: object
+  required: [id, product_id, quantity, supplier, receipt_date, created_by]
+  properties:
+    id:
+      type: string
+      format: uuid
+    product_id:
+      type: string
+      format: uuid
+    quantity:
+      type: integer
+      minimum: 1
+    supplier:
+      type: string
+    receipt_date:
+      type: string
+      format: date-time
+    created_by:
+      type: string
+CreateReceiptRequest:
+  type: object
+  required: [product_id, quantity, supplier]
+  properties:
+    product_id:
+      type: string
+      format: uuid
+    quantity:
+      type: integer
+      minimum: 1
+    supplier:
+      type: string
+WriteOffRequest:
+  type: object
+  required: [product_id, quantity]
+  properties:
+    product_id:
+      type: string
+      format: uuid
+    quantity:
+      type: integer
+      minimum: 1
+WriteOffResponse:
+  type: object
+  properties:
+    message: { type: string }
+    product_id: { type: string }
+    remaining_quantity: { type: integer }
+ReceiptListResponse:
+  type: object
+  properties:
+    items:
+      type: array
+      items:
+        $ref: '#/Receipt'
+    total:
+      type: integer

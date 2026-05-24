@@ -1,0 +1,25 @@
+ValidationError:
+  type: object
+  properties:
+    code: { type: string, enum: [validation_error] }
+    message: { type: string }
+NotFoundError:
+  type: object
+  properties:
+    code: { type: string, enum: [not_found] }
+    message: { type: string }
+ConflictError:
+  type: object
+  properties:
+    code: { type: string, enum: [conflict] }
+    message: { type: string }
+InternalError:
+  type: object
+  properties:
+    code: { type: string, enum: [internal_error] }
+    message: { type: string }
+UnauthorizedError:
+  type: object
+  properties:
+    code: { type: string, enum: [unauthorized] }
+    message: { type: string }

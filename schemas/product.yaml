@@ -1,0 +1,49 @@
+Product:
+  type: object
+  required: [id, name, quantity_on_hand, unit, created_at]
+  properties:
+    id:
+      type: string
+      format: uuid
+    name:
+      type: string
+    description:
+      type: string
+    sku:
+      type: string
+    quantity_on_hand:
+      type: integer
+      minimum: 0
+    unit:
+      type: string
+    created_at:
+      type: string
+      format: date-time
+    updated_at:
+      type: string
+      format: date-time
+CreateProductRequest:
+  type: object
+  required: [name, initial_quantity]
+  properties:
+    name:
+      type: string
+    description:
+      type: string
+    sku:
+      type: string
+    initial_quantity:
+      type: integer
+      minimum: 0
+    unit:
+      type: string
+      default: pcs
+ProductListResponse:
+  type: object
+  properties:
+    items:
+      type: array
+      items:
+        $ref: '#/Product'
+    total:
+      type: integer
